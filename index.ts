@@ -13,12 +13,17 @@ async function handler(_req: Request): Promise<Response> {
     handlePreFlightRequest();
   }
 
+  // ✅ 1. Extraire le mot depuis l'URL
+  const url = new URL(_req.url);
+  const userWord = url.searchParams.get("word") || "default";
+  console.log("Mot reçu depuis l’URL :", userWord);
+
   const headers = new Headers();
   headers.append("Content-Type", "application/json");
 
   const similarityRequestBody = JSON.stringify({
-    word1: "centrale",
-    word2: "supelec",
+    word1: userWord, // mot saisi par l'utilisateur dans l'URL
+    word2: "supelec", // mot fixe
   });
 
   const requestOptions = {
