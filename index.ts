@@ -9,48 +9,24 @@ function handlePreFlightRequest(): Response {
 }
 
 async function handler(_req: Request): Promise<Response> {
-  if (_req.method == "OPTIONS") {
-    handlePreFlightRequest();
-  }
+  if (_req.method === "OPTIONS") return handlePreFlightRequest();
 
-  // ✅ 1. Extraire le mot depuis l'URL
   const url = new URL(_req.url);
-  const userWord = url.searchParams.get("word") || "default";
-  console.log("Mot reçu depuis l’URL :", userWord);
-
-  const headers = new Headers();
-  headers.append("Content-Type", "application/json");
+  const userWord = url.searchParams.get("word") || "test";
 
   const similarityRequestBody = JSON.stringify({
-    word1: userWord, // mot saisi par l'utilisateur dans l'URL
-    word2: "supelec", // mot fixe
+    word1: "centrale",
+    word2: userWord,
   });
 
-  const requestOptions = {
-    method: "POST",
-    headers: headers,
-    body: similarityRequestBody,
-    redirect: "follow",
-  };
-
   try {
-    const response = await fetch("https://word2vec.nicolasfley.fr/similarity", requestOptions);
-
-    if (!response.ok) {
-      console.error(`Error: ${response.statusText}`);
-      return new Response(`Error: ${response.statusText}`, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Headers": "content-type",
-        },
-      });
-    }
+    const response = await fetch("https://word2vec.nicolasfley.fr/similarity", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: similarityRequestBody,
+    });
 
     const result = await response.json();
-
-    console.log(result);
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: {
@@ -60,7 +36,6 @@ async function handler(_req: Request): Promise<Response> {
       },
     });
   } catch (error) {
-    console.error("Fetch error:", error);
     return new Response(`Error: ${error.message}`, { status: 500 });
   }
 }
